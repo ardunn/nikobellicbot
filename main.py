@@ -11,6 +11,7 @@ from praw.exceptions import APIException
 A reckless Niko Bellic reddit bot which links to voice quips. 
 """
 
+
 class Triggers:
     full = [
         "niko bellic",
@@ -56,7 +57,7 @@ def main_loop():
                 desc = f"In subreddit {subreddit}"
                 sr = reddit.subreddit(subreddit)
                 for label, submission_list in {"hot": sr.hot(limit=top_n_submissions), "new": sr.new(limit=top_n_submissions)}.items():
-                    for submission in tqdm.tqdm(submission_list, desc=desc + " " + label):
+                    for submission in tqdm.tqdm(submission_list, desc=desc + " sort=" + label):
 
                         # Update comment tree to expand "more comments" sections
                         submission.comments.replace_more(limit=0)
@@ -97,10 +98,10 @@ def main_loop():
 
 if __name__ == "__main__":
     whoami = "nikobellicbot"
-    sleep_time = 7200
-    interval_time = 3
+    sleep_time = 10800
+    interval_time = 10
     api_exception_time = 1200
-    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
+    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar", "GTA6", "GTAV", "gtaglitches")
     # subreddits = ("testingground4bots",)
     # subreddits = ("rockstar",)
     top_n_submissions = 100
