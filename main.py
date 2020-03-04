@@ -94,9 +94,9 @@ def main_loop():
 
 if __name__ == "__main__":
     whoami = "nikobellicbot"
-    sleep_time = 60
+    sleep_time = 3600
     interval_time = 5
-    api_exception_time = 120
+    api_exception_time = 7200
     subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
     # subreddits = ("testingground4bots",)
     top_n_submissions = 50
