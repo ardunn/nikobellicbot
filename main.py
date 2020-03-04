@@ -1,10 +1,8 @@
 import os
 import time
 import random
-from collections import namedtuple
+import tqdm
 import praw
-from praw.models import Comment
-from praw.models import Submission
 
 
 class Triggers:
@@ -46,10 +44,11 @@ def main_loop():
     while True:
         new_comments = 0
         for subreddit in subreddits:
-            print(f"In subreddit {subreddit}")
-            for submission in reddit.subreddit(subreddit).new(limit=top_n_submissions):
+            desc = f"In subreddit {subreddit}"
+            for submission in tqdm.tqdm(reddit.subreddit(subreddit).hot(limit=top_n_submissions), desc=desc):
                 submission_permalink = submission.permalink
                 all_comments = submission.comments.replace_more(limit=0)
+                all_comments = [c for c in all_comments if isinstance(praw.models.Comment)]
                 for comment in all_comments:
                     if object_contains_trigger(comment):
                         comment_permalink = str(comment.permalink)
@@ -84,7 +83,8 @@ if __name__ == "__main__":
     voicedir = os.path.join(basedir, "voice")
     replies_mp3 = os.listdir(voicedir)
     n_replies = len(replies_mp3)
-    gh_preface = "https://raw.githubusercontent.com/ardunn/nikobellicbot/master/voice/"
+    # gh_preface = "https://raw.githubusercontent.com/ardunn/nikobellicbot/master/voice/"
+    gh_preface = "https://alexdunn.io/extra/nicobellicbot/"
     replies_link = [gh_preface + mp3 for mp3 in replies_mp3]
     replies_txt = [s.replace(".mp3", "").replace("_", " ") for s in replies_mp3]
     replies = [f"[{replies_txt[i]}]({replies_link[i]})" for i in range(n_replies)]
