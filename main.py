@@ -83,8 +83,7 @@ if __name__ == "__main__":
     voicedir = os.path.join(basedir, "voice")
     replies_mp3 = os.listdir(voicedir)
     n_replies = len(replies_mp3)
-    # gh_preface = "https://raw.githubusercontent.com/ardunn/nikobellicbot/master/voice/"
-    gh_preface = "https://alexdunn.io/extra/nicobellicbot/"
+    gh_preface = "https://ardunn.github.io/nikobellicbot/voice/"
     replies_link = [gh_preface + mp3 for mp3 in replies_mp3]
     replies_txt = [s.replace(".mp3", "").replace("_", " ") for s in replies_mp3]
     replies = [f"[{replies_txt[i]}]({replies_link[i]})" for i in range(n_replies)]
