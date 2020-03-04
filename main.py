@@ -26,15 +26,11 @@ class Triggers:
         "gta 4",
     ]
 
-    anti = [
-        "/ardunn/nikobellicbot"
-    ]
-
 
 def object_contains_trigger(obj):
     normal_body = obj.body.lower()
     if any([t in normal_body for t in triggers.full]):
-        if not any([t in normal_body for t in triggers.anti]):
+        if gh_prefix not in normal_body:
             if obj.author.name != whoami:
                 return True
     return False
@@ -46,24 +42,38 @@ def main_loop():
         for subreddit in subreddits:
             desc = f"In subreddit {subreddit}"
             for submission in tqdm.tqdm(reddit.subreddit(subreddit).hot(limit=top_n_submissions), desc=desc):
-                submission_permalink = submission.permalink
-                all_comments = submission.comments.replace_more(limit=0)
-                all_comments = [c for c in all_comments if isinstance(praw.models.Comment)]
-                for comment in all_comments:
-                    if object_contains_trigger(comment):
-                        comment_permalink = str(comment.permalink)
+
+                # Update comment tree to expand "more comments" sections
+                submission.comments.replace_more(limit=0)
+
+                # Add submission body to title for scanning for triggers
+                submission.body = str(submission.selftext) + " " + (submission.title)
+                all_objs = [submission] + submission.comments.list()
+
+                # Process all submission/comments together
+                for comment_or_submission in all_objs:
+                    if object_contains_trigger(comment_or_submission):
+                        permalink = str(comment_or_submission.permalink)
                         with open(reply_logfile, "r") as reply_log:
                             previous_permalinks = str(reply_log.read())
-                        if comment_permalink not in previous_permalinks:
+                        if permalink not in previous_permalinks:
                             time.sleep(interval_time)
-                            reply = random.choice([replies[0], replies[10]])
-                            comment.reply(reply)
+                            reply = random.choice([replies[9], replies[18]])
+                            comment_or_submission.reply(reply)
                             with open(reply_logfile, "a") as reply_log:
-                                reply_log.write(comment.permalink + "\n")
+                                reply_log.write(comment_or_submission.permalink + "\n")
                             new_comments += 1
+
+                            if isinstance(comment_or_submission, praw.models.Comment):
+                                reply_type = "comment"
+                            else:
+                                reply_type = "submission"
+
                             print(
-                                f"Replied {reply} on comment {comment_permalink} on submission {submission_permalink}"
+                                f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
                             )
+                        else:
+                            print(f"{comment_or_submission.body.lower()} did not contain trigger")
         print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
         print(f"Sleeping {sleep_time} seconds...")
         time.sleep(sleep_time)
@@ -71,11 +81,11 @@ def main_loop():
 
 if __name__ == "__main__":
     whoami = "nikobellicbot2"
-    sleep_time = 60
-    interval_time = 5
-    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
-    # subreddits = ("testingground4bots",)
-    top_n_submissions = 100
+    sleep_time = 2
+    interval_time = 1
+    # subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
+    subreddits = ("testingground4bots",)
+    top_n_submissions = 1
 
     basedir = os.path.dirname(os.path.abspath(__file__))
 
@@ -83,23 +93,27 @@ if __name__ == "__main__":
     voicedir = os.path.join(basedir, "voice")
     replies_mp3 = os.listdir(voicedir)
     n_replies = len(replies_mp3)
-    gh_preface = "https://ardunn.github.io/nikobellicbot/voice/"
-    replies_link = [gh_preface + mp3 for mp3 in replies_mp3]
+    gh_prefix = "https://ardunn.github.io/nikobellicbot/voice/"
+    replies_link = [gh_prefix + mp3 for mp3 in replies_mp3]
 
     long_clips = {
-        "abbr_young_and_bitter": "Hah. War is where the young and stupid are tricked by the old and bitter into killing eachother.I was very young, and very angry. Maybe that is no excuse?",
+        "abbr_young_and_bitter": "Hah. War is where the young and stupid are tricked by the old and bitter into killing eachother. I was very young, and very angry. Maybe that is no excuse?",
         "abbr_traitor": "I know the traitor was not me. So for 10 years, I've been searching for the other two. One of them... lives here.",
         "abbr_cowering": "FIFTEEN minutes ago, you were cowering in fear because you didn't know what was going to happen. NOW, you know everything is shit, and we're going to be killed, and you're all cheerful? I don't get it!"
     }
 
     replies_txt = []
     for s in replies_mp3:
-        s_no_ext = s.replace(".mp3", "")
+        s_no_ext = s.replace(".mp3", "").replace("{qmark}", "?")
         if s_no_ext in list(long_clips.keys()):
             replies_txt.append(long_clips[s_no_ext])
         else:
             replies_txt.append(s_no_ext.replace("_", " "))
     replies = [f"[{replies_txt[i]}]({replies_link[i]})" for i in range(n_replies)]
+
+    # for i, r in enumerate(replies):
+    #     print(i, r)
+    # raise ValueError
 
     triggers = Triggers()
 
