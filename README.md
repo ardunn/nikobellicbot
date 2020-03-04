@@ -9,4 +9,4 @@ He is based on Rockstar Games' character Niko Bellic.
 
 Inspired by [Bobby B Bot](https://github.com/bobby-b-bot/reddit).
 
-######All GTAIV voice and image assets used by this bot are owned entirely by Rockstar Games and are for noncommercial (personal) fair use only.
+##### All GTAIV voice and image assets used by this bot are owned entirely by Rockstar Games and are for noncommercial (personal) fair use only.
