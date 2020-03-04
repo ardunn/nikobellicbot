@@ -12,3 +12,5 @@ He is based on Rockstar Games' character Niko Bellic. Find his work [here](https
 Inspired by [Bobby B Bot](https://github.com/bobby-b-bot/reddit).
 
 ##### All GTAIV voice and image assets used by this bot are owned entirely by Rockstar Games and are for noncommercial (personal) fair use only.
+
+This bot is currently being run on an old android phone doubling as an alarm clock.

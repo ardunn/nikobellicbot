@@ -11,6 +11,7 @@ from praw.exceptions import APIException
 A reckless Niko Bellic reddit bot which links to voice quips. 
 """
 
+
 class Triggers:
     full = [
         "niko bellic",
@@ -54,41 +55,43 @@ def main_loop():
             new_comments = 0
             for subreddit in subreddits:
                 desc = f"In subreddit {subreddit}"
-                for submission in tqdm.tqdm(reddit.subreddit(subreddit).hot(limit=top_n_submissions), desc=desc):
+                sr = reddit.subreddit(subreddit)
+                for label, submission_list in {"hot": sr.hot(limit=top_n_submissions), "new": sr.new(limit=top_n_submissions)}.items():
+                    for submission in tqdm.tqdm(submission_list, desc=desc + " sort=" + label):
 
-                    # Update comment tree to expand "more comments" sections
-                    submission.comments.replace_more(limit=0)
+                        # Update comment tree to expand "more comments" sections
+                        submission.comments.replace_more(limit=0)
 
-                    # Add submission body to title for scanning for triggers
-                    submission.body = str(submission.selftext) + " " + (submission.title)
-                    all_objs = [submission] + submission.comments.list()
+                        # Add submission body to title for scanning for triggers
+                        submission.body = str(submission.selftext) + " " + (submission.title)
+                        all_objs = [submission] + submission.comments.list()
 
-                    # Process all submission/comments together
-                    for comment_or_submission in all_objs:
-                        if object_contains_trigger(comment_or_submission):
-                            permalink = str(comment_or_submission.permalink)
-                            with open(reply_logfile, "r") as reply_log:
-                                previous_permalinks = str(reply_log.read())
-                            if permalink not in previous_permalinks:
-                                time.sleep(interval_time)
-                                reply = random.choice(replies)
-                                comment_or_submission.reply(reply)
-                                with open(reply_logfile, "a") as reply_log:
-                                    reply_log.write(comment_or_submission.permalink + "\n")
-                                new_comments += 1
+                        # Process all submission/comments together
+                        for comment_or_submission in all_objs:
+                            if object_contains_trigger(comment_or_submission):
+                                permalink = str(comment_or_submission.permalink)
+                                with open(reply_logfile, "r") as reply_log:
+                                    previous_permalinks = str(reply_log.read())
+                                if permalink not in previous_permalinks:
+                                    time.sleep(interval_time)
+                                    reply = random.choice(replies)
+                                    comment_or_submission.reply(reply)
+                                    with open(reply_logfile, "a") as reply_log:
+                                        reply_log.write(comment_or_submission.permalink + "\n")
+                                    new_comments += 1
 
-                                if isinstance(comment_or_submission, praw.models.Comment):
-                                    reply_type = "comment"
-                                else:
-                                    reply_type = "submission"
+                                    if isinstance(comment_or_submission, praw.models.Comment):
+                                        reply_type = "comment"
+                                    else:
+                                        reply_type = "submission"
 
-                                print(
-                                    f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
-                                )
+                                    print(
+                                        f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
+                                    )
             print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
             print(f"Sleeping {sleep_time} seconds...")
             time.sleep(sleep_time)
-        except APIException:
+        except APIException as api_exception:
             print(f"API Limit reached! Sleeping for {api_exception} seconds...")
             time.sleep(api_exception_time)
 
@@ -96,10 +99,11 @@ def main_loop():
 if __name__ == "__main__":
     whoami = "nikobellicbot"
     sleep_time = 10800
-    interval_time = 5
+    interval_time = 10
     api_exception_time = 1200
-    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
+    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar", "GTA6", "GTAV", "gtaglitches")
     # subreddits = ("testingground4bots",)
+    # subreddits = ("rockstar",)
     top_n_submissions = 100
 
     basedir = os.path.dirname(os.path.abspath(__file__))
