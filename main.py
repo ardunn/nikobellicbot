@@ -82,8 +82,6 @@ def main_loop():
                                 print(
                                     f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
                                 )
-                            else:
-                                print(f"{comment_or_submission.body.lower()} did not contain trigger")
             print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
             print(f"Sleeping {sleep_time} seconds...")
             time.sleep(sleep_time)
