@@ -28,43 +28,55 @@ class Triggers:
         "gta 4",
     ]
 
+    anti = [
+        "/ardunn/nikobellicbot"
+    ]
 
-def object_contains_trigger(obj, triggers, reply_log):
+
+def object_contains_trigger(obj):
     normal_body = obj.body.lower()
-    permalink = obj.permalink
     if any([t in normal_body for t in triggers.full]):
-        if permalink not in reply_log.readlines() and obj.author.name != whoami:
-            return True
+        if not any([t in normal_body for t in triggers.anti]):
+            if obj.author.name != whoami:
+                return True
     return False
 
 
 def main_loop():
-    with open(reply_logfile, "a+") as reply_log:
-        while True:
-            new_comments = 0
-            print(f"Sleeping {sleep_time} seconds...")
-            time.sleep(sleep_time)
-            for subreddit in subreddits:
-                for submission in reddit.subreddit(subreddit).new(limit=top_n_submissions):
-                    link = submission.permalink
-                    all_comments = submission.comments.list()
-                    for comment in all_comments:
-                        if object_contains_trigger(comment, triggers, reply_log):
+    while True:
+        new_comments = 0
+        for subreddit in subreddits:
+            print(f"In subreddit {subreddit}")
+            for submission in reddit.subreddit(subreddit).new(limit=top_n_submissions):
+                submission_permalink = submission.permalink
+                all_comments = submission.comments.replace_more(limit=0)
+                for comment in all_comments:
+                    if object_contains_trigger(comment):
+                        comment_permalink = str(comment.permalink)
+                        with open(reply_logfile, "r") as reply_log:
+                            previous_permalinks = str(reply_log.read())
+                        if comment_permalink not in previous_permalinks:
                             time.sleep(interval_time)
                             reply = random.choice(replies)
                             comment.reply(reply)
-                            reply_log.write(comment.permalink + "\n")
+                            with open(reply_logfile, "a") as reply_log:
+                                reply_log.write(comment.permalink + "\n")
                             new_comments += 1
-                            print(f"Replied {reply} on comment {comment.permalink} on submission {submission.permalink}")
-            print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
+                            print(
+                                f"Replied {reply} on comment {comment_permalink} on submission {submission_permalink}"
+                            )
+        print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
+        print(f"Sleeping {sleep_time} seconds...")
+        time.sleep(sleep_time)
+
 
 if __name__ == "__main__":
     whoami = "nikobellicbot2"
-    sleep_time = 2
-    interval_time = 1
-    # subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
-    subreddits = ("testingground4bots",)
-    top_n_submissions = 3
+    sleep_time = 60
+    interval_time = 5
+    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar", "testingground4bots")
+    # subreddits = ("testingground4bots",)
+    top_n_submissions = 100
 
     basedir = os.path.dirname(os.path.abspath(__file__))
 
