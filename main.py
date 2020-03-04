@@ -90,7 +90,7 @@ def main_loop():
 
 
 if __name__ == "__main__":
-    whoami = "nikobellicbot2"
+    whoami = "nikobellicbot"
     sleep_time = 60
     interval_time = 5
     api_exception_time = 120
