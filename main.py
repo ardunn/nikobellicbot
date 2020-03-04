@@ -7,6 +7,9 @@ import tqdm
 import praw
 from praw.exceptions import APIException
 
+"""
+A reckless Niko Bellic reddit bot which links to voice quips. 
+"""
 
 class Triggers:
     full = [
