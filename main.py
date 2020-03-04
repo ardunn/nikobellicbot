@@ -1,8 +1,11 @@
 import os
 import time
 import random
+import itertools
+
 import tqdm
 import praw
+from praw.exceptions import APIException
 
 
 class Triggers:
@@ -14,22 +17,28 @@ class Triggers:
         "hey cousin want to go bowling"
     ]
 
-    # todo: not currently used
-    partial = [
-        "niko",
-        "bellic",
+    gta_partials = [
         "grand theft auto",
         "grand theft auto iv",
         "grand theft auto 4",
+        "liberty city",
         "gta",
         "gta iv",
         "gta 4",
     ]
 
+    niko_partials = [
+        "niko",
+        "bellic",
+    ]
+
+    partials = list(itertools.product(gta_partials, niko_partials))
+
 
 def object_contains_trigger(obj):
     normal_body = obj.body.lower()
-    if any([t in normal_body for t in triggers.full]):
+    if any([t in normal_body for t in triggers.full]) or \
+            any([all([p in normal_body for p in pset]) for pset in triggers.partials]):
         if gh_prefix not in normal_body:
             if obj.author.name != whoami:
                 return True
@@ -38,54 +47,58 @@ def object_contains_trigger(obj):
 
 def main_loop():
     while True:
-        new_comments = 0
-        for subreddit in subreddits:
-            desc = f"In subreddit {subreddit}"
-            for submission in tqdm.tqdm(reddit.subreddit(subreddit).hot(limit=top_n_submissions), desc=desc):
+        try:
+            new_comments = 0
+            for subreddit in subreddits:
+                desc = f"In subreddit {subreddit}"
+                for submission in tqdm.tqdm(reddit.subreddit(subreddit).hot(limit=top_n_submissions), desc=desc):
 
-                # Update comment tree to expand "more comments" sections
-                submission.comments.replace_more(limit=0)
+                    # Update comment tree to expand "more comments" sections
+                    submission.comments.replace_more(limit=0)
 
-                # Add submission body to title for scanning for triggers
-                submission.body = str(submission.selftext) + " " + (submission.title)
-                all_objs = [submission] + submission.comments.list()
+                    # Add submission body to title for scanning for triggers
+                    submission.body = str(submission.selftext) + " " + (submission.title)
+                    all_objs = [submission] + submission.comments.list()
 
-                # Process all submission/comments together
-                for comment_or_submission in all_objs:
-                    if object_contains_trigger(comment_or_submission):
-                        permalink = str(comment_or_submission.permalink)
-                        with open(reply_logfile, "r") as reply_log:
-                            previous_permalinks = str(reply_log.read())
-                        if permalink not in previous_permalinks:
-                            time.sleep(interval_time)
-                            reply = random.choice([replies[9], replies[18]])
-                            comment_or_submission.reply(reply)
-                            with open(reply_logfile, "a") as reply_log:
-                                reply_log.write(comment_or_submission.permalink + "\n")
-                            new_comments += 1
+                    # Process all submission/comments together
+                    for comment_or_submission in all_objs:
+                        if object_contains_trigger(comment_or_submission):
+                            permalink = str(comment_or_submission.permalink)
+                            with open(reply_logfile, "r") as reply_log:
+                                previous_permalinks = str(reply_log.read())
+                            if permalink not in previous_permalinks:
+                                time.sleep(interval_time)
+                                reply = random.choice(replies)
+                                comment_or_submission.reply(reply)
+                                with open(reply_logfile, "a") as reply_log:
+                                    reply_log.write(comment_or_submission.permalink + "\n")
+                                new_comments += 1
 
-                            if isinstance(comment_or_submission, praw.models.Comment):
-                                reply_type = "comment"
+                                if isinstance(comment_or_submission, praw.models.Comment):
+                                    reply_type = "comment"
+                                else:
+                                    reply_type = "submission"
+
+                                print(
+                                    f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
+                                )
                             else:
-                                reply_type = "submission"
-
-                            print(
-                                f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
-                            )
-                        else:
-                            print(f"{comment_or_submission.body.lower()} did not contain trigger")
-        print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
-        print(f"Sleeping {sleep_time} seconds...")
-        time.sleep(sleep_time)
+                                print(f"{comment_or_submission.body.lower()} did not contain trigger")
+            print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
+            print(f"Sleeping {sleep_time} seconds...")
+            time.sleep(sleep_time)
+        except APIException:
+            time.sleep(api_exception_time)
 
 
 if __name__ == "__main__":
     whoami = "nikobellicbot2"
-    sleep_time = 2
-    interval_time = 1
-    # subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
-    subreddits = ("testingground4bots",)
-    top_n_submissions = 1
+    sleep_time = 60
+    interval_time = 5
+    api_exception_time = 120
+    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
+    # subreddits = ("testingground4bots",)
+    top_n_submissions = 50
 
     basedir = os.path.dirname(os.path.abspath(__file__))
 
@@ -110,10 +123,6 @@ if __name__ == "__main__":
         else:
             replies_txt.append(s_no_ext.replace("_", " "))
     replies = [f"[{replies_txt[i]}]({replies_link[i]})" for i in range(n_replies)]
-
-    # for i, r in enumerate(replies):
-    #     print(i, r)
-    # raise ValueError
 
     triggers = Triggers()
 
