@@ -89,17 +89,18 @@ def main_loop():
             print(f"Sleeping {sleep_time} seconds...")
             time.sleep(sleep_time)
         except APIException:
+            print(f"API Limit reached! Sleeping for {api_exception} seconds...")
             time.sleep(api_exception_time)
 
 
 if __name__ == "__main__":
     whoami = "nikobellicbot"
-    sleep_time = 3600
+    sleep_time = 10800
     interval_time = 5
-    api_exception_time = 7200
+    api_exception_time = 1200
     subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar")
     # subreddits = ("testingground4bots",)
-    top_n_submissions = 50
+    top_n_submissions = 100
 
     basedir = os.path.dirname(os.path.abspath(__file__))
 
