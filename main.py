@@ -31,6 +31,10 @@ class Triggers:
         "gta 4",
     ]
 
+    gtas = ["grand theft auto", "gta"]
+    fours = ["", "iv", "4", " iv", " 4"]
+    gta_partials = ["".join(terms) for terms in list(itertools.product(gtas, fours))]
+
     niko_partials = [
         "niko",
         "bellic",
@@ -102,7 +106,19 @@ if __name__ == "__main__":
     sleep_time = 10800
     interval_time = 20
     api_exception_time = 3600
-    subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar", "GTA6", "GTAV", "gtaglitches")
+    subreddits = (
+        "GTAIV",
+        "gaming",
+        "GrandTheftAutoV",
+        "GrandTheftAuto",
+        "GTA",
+        "gtaonline",
+        "rockstar",
+        "GTA6",
+        "GTAV",
+        "gtaglitches",
+        "pcgaming",
+    )
     # subreddits = ("testingground4bots",)
     # subreddits = ("rockstar",)
     top_n_submissions = 100
