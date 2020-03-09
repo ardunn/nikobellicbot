@@ -34,6 +34,7 @@ class Triggers:
     niko_partials = [
         "niko",
         "bellic",
+        "roman"
     ]
 
     partials = list(itertools.product(gta_partials, niko_partials))
@@ -99,8 +100,8 @@ def main_loop():
 if __name__ == "__main__":
     whoami = "nikobellicbot"
     sleep_time = 10800
-    interval_time = 10
-    api_exception_time = 1200
+    interval_time = 20
+    api_exception_time = 3600
     subreddits = ("GTAIV", "gaming", "GrandTheftAutoV", "GrandTheftAuto", "GTA", "gtaonline", "rockstar", "GTA6", "GTAV", "gtaglitches")
     # subreddits = ("testingground4bots",)
     # subreddits = ("rockstar",)
