@@ -6,6 +6,7 @@ import itertools
 import tqdm
 import praw
 from praw.exceptions import APIException
+from prawcore.exceptions import RequestException
 
 """
 A reckless Niko Bellic reddit bot which links to voice quips. 
@@ -99,6 +100,10 @@ def main_loop():
         except APIException as api_exception:
             print(f"API Limit reached! Sleeping for {api_exception} seconds...")
             time.sleep(api_exception_time)
+            continue
+        except RequestException as req_exception:
+            print(f"API Limit reached! Sleeping for {api_exception} seconds...")
+            continue
 
 
 if __name__ == "__main__":
