@@ -102,7 +102,7 @@ def main_loop():
             time.sleep(api_exception_time)
             continue
         except RequestException as req_exception:
-            print(f"API Limit reached! Sleeping for {api_exception} seconds...")
+            print(f"Request exception! Sleeping for {req_exception} seconds...")
             continue
 
 
