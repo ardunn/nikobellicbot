@@ -46,7 +46,7 @@ class Triggers:
 
 
 def object_contains_trigger(obj):
-    normal_body = obj.body.lower()
+    normal_body = obj.body.lower().replace(",", "").replace(".", "")
     if any([t in normal_body for t in triggers.full]) or \
             any([all([p in normal_body for p in pset]) for pset in triggers.partials]):
         if gh_prefix not in normal_body:
