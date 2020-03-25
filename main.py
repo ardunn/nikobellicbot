@@ -59,10 +59,45 @@ def main_loop():
     while True:
         try:
             new_comments = 0
+
+            # replies in inbox
+            for label, submission_list in {
+                "inbox_comments": reddit.inbox.comment_replies(),
+                "inbox_submission_replies": reddit.inbox.submission_replies()
+            }.items():
+                for inbox_reply in tqdm.tqdm(submission_list, desc=label):
+                    if label in ["inbox_comments", "inbox_submission_replies"]:
+                        all_objs = [c for c in submission_list]
+                    # Process all submission/comments together
+                    for comment_or_submission in all_objs:
+                        permalink = str(comment_or_submission.context)
+                        with open(reply_logfile, "r") as reply_log:
+                            previous_permalinks = str(reply_log.read())
+                        if permalink not in previous_permalinks:
+                            time.sleep(interval_time)
+                            reply = random.choice(replies)
+                            comment_or_submission.reply(reply)
+                            with open(reply_logfile, "a") as reply_log:
+                                reply_log.write(permalink + "\n")
+                            new_comments += 1
+
+                            if isinstance(comment_or_submission, praw.models.Comment):
+                                reply_type = "comment"
+                            else:
+                                reply_type = "submission"
+                            print(
+                                f"Replied {reply} on inbox {reply_type} {permalink}"
+                            )
+
+            # triggers in subreddit
             for subreddit in subreddits:
                 desc = f"In subreddit {subreddit}"
                 sr = reddit.subreddit(subreddit)
-                for label, submission_list in {"hot": sr.hot(limit=top_n_submissions), "new": sr.new(limit=top_n_submissions)}.items():
+                for label, submission_list in {
+                    "hot": sr.hot(limit=top_n_submissions),
+                    "new": sr.new(limit=top_n_submissions)
+                }.items():
+
                     for submission in tqdm.tqdm(submission_list, desc=desc + " sort=" + label):
 
                         # Update comment tree to expand "more comments" sections
@@ -71,6 +106,7 @@ def main_loop():
                         # Add submission body to title for scanning for triggers
                         submission.body = str(submission.selftext) + " " + (submission.title)
                         all_objs = [submission] + submission.comments.list()
+                        obj_url_attr = "permalink"
 
                         # Process all submission/comments together
                         for comment_or_submission in all_objs:
@@ -83,7 +119,7 @@ def main_loop():
                                     reply = random.choice(replies)
                                     comment_or_submission.reply(reply)
                                     with open(reply_logfile, "a") as reply_log:
-                                        reply_log.write(comment_or_submission.permalink + "\n")
+                                        reply_log.write(permalink + "\n")
                                     new_comments += 1
 
                                     if isinstance(comment_or_submission, praw.models.Comment):
