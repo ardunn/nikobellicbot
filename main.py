@@ -107,7 +107,6 @@ def main_loop():
                         # Add submission body to title for scanning for triggers
                         submission.body = str(submission.selftext) + " " + (submission.title)
                         all_objs = [submission] + submission.comments.list()
-                        obj_url_attr = "permalink"
 
                         # Process all submission/comments together
                         for comment_or_submission in all_objs:
@@ -127,10 +126,10 @@ def main_loop():
                                         reply_type = "comment"
                                     else:
                                         reply_type = "submission"
-
                                     print(
                                         f"Replied {reply} on {reply_type} {permalink} on submission {submission.permalink}"
                                     )
+
             print(f"\n---\n\tAdded {new_comments} comments.\n---\n")
             print(f"Sleeping {sleep_time} seconds...")
             time.sleep(sleep_time)
