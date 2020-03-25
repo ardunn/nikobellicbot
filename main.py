@@ -7,6 +7,7 @@ import tqdm
 import praw
 from praw.exceptions import APIException
 from prawcore.exceptions import RequestException
+from prawcore.exceptions import ServerError as ServerException
 
 """
 A reckless Niko Bellic reddit bot which links to voice quips. 
@@ -98,13 +99,17 @@ def main_loop():
             print(f"Sleeping {sleep_time} seconds...")
             time.sleep(sleep_time)
         except APIException as api_exception:
-            print(f"API Limit reached! Sleeping for {api_exception} seconds...")
+            print(f"API Limit reached! Sleeping for {api_exception_time} seconds...")
             time.sleep(api_exception_time)
             continue
         except RequestException as req_exception:
-            print(f"Request exception! Sleeping for {req_exception} seconds...")
+            print(f"Request exception! Sleeping for {api_exception_time} seconds...")
+            print(req_exception)
             continue
-
+        except ServerException as seq_exception:
+            print(f"Server exception! Sleeping for {api_exception_time} seconds...")
+            print(seq_exception)
+            continue
 
 if __name__ == "__main__":
     whoami = "nikobellicbot"
