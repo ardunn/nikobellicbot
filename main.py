@@ -51,7 +51,7 @@ def object_contains_trigger(obj):
     if any([t in normal_body for t in triggers.full]) or \
             any([all([p in normal_body for p in pset]) for pset in triggers.partials]):
         if gh_prefix not in normal_body:
-            if obj.author.name != whoami:
+            if obj is not None and obj.author is not None and obj.author.name is not None and obj.author.name != whoami:
                 return True
     return False
 
