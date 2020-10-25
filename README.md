@@ -1,4 +1,6 @@
 # Niko Bellic Bot
+### NOTE: This bot is no longer maintained!
+
 
 He is a voice quip bot who recklessly patrols the Grand Theft Auto and gaming subreddits. Do *not* make him angry.
 
